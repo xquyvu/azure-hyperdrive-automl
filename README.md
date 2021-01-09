@@ -34,7 +34,27 @@ The pipeline's components are as follows:
 
 ## AutoML Pipeline
 
-The best performing model selected by the AutoML run was a VotingEnsemble, which is an ensemble of models. In this ensemble, the models were mostly LightGBMs.
+In this pipeline, no preprocessing step was necessary. All it took was to point the pipeline to a data source and specify some configurations as follows:
+
+```python
+AutoMLConfig(
+    experiment_timeout_minutes=30,
+    task='classification',
+    primary_metric='accuracy',
+    training_data=ds,
+    label_column_name='y',
+    n_cross_validations=4,
+    max_concurrent_iterations=4,
+    compute_target=target,
+    enable_early_stopping=True,
+    iterations=15,
+    blocked_models=['SVM']
+)
+```
+
+In this configuration, I explicitely block Support Vector Machine because it is extremely slow (15x comparing to other models).
+
+After iterating through 15 models, the AutoML pipeline selected the VotingEnsemble model as the best performing. VotingEnsemble models can be considered as a meta-model or a model-of models, since it combines the predictions from multiple other models.
 
 ## Pipeline comparison
 
@@ -46,5 +66,5 @@ Nevertheless, AutoML utilises a large range of complex models and sophisticated 
 
 ## Future work
 
-- Replace `SKLearn` estimator (deprecated) with `ScriptRunConfig`
+- Replace `SKLearn` estimator with `ScriptRunConfig`. Although they have similar functionalities, `SKLearn` API is now deprecated and should be replaced with `ScriptRunConfig` which is more generic.
 - Re-evaluate the 2 pipelines using AUROC and AUPRC
