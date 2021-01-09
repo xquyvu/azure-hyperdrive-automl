@@ -5,6 +5,8 @@
 In this project, I built and optimized an Azure ML pipeline using the Python SDK and a provided Scikit-learn model (Logistic regression).
 This model was then compared to an Azure AutoML run.
 
+**Caveat**: The aim of this project was to practice developing ML pipelines using Azure HyperDrive and Azure AutoML, not to achieve the best accuracy nor applying proper data science methodology to problem solving. Therefore, data ETL, EDA, evaluation, etc. which are major components of a data science projects were skipped or not invested in.
+
 ## Summary
 
 The dataset resulted from a phone-based marketing campaign of a banking institution in Portugal. In this marketing campaign, potential customers were contacted by phone and introduced to the bank's product (bank term deposit) and they can decide to subscribe to the product or not.
