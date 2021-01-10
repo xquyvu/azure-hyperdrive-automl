@@ -29,7 +29,8 @@ The pipeline's components are as follows:
 - Classification algorithm: Logistic regression. This model is simple and light weight enough to be used as baseline for this project.
 - Hyper parameter tuning: Azure `Hyperdrive`, which composes of 2 components:
 
-  - Parameter sampler: `RandomParameterSampling` class. This is used to select values for 2 important hyperparameters: `C` which is the inverse of regularisation strength, and `max_iter` for maximum of iterations.
+  - Parameter sampler: `RandomParameterSampling` class. This is used to select values for 2 important hyperparameters: `C` which is the inverse of regularisation strength, and `max_iter` for maximum of iterations. This class randomly selects hyperparameter from a define space. It supports both discrete and continuous hyperparameter space and terminate early runs that are low performing. For the sake of simplicity, only discrete parameter space was utilised.
+
   - Optimisation policy: Bandit Policy with a slack factor of 0.1 and evaluation interval of 1. Since this policy terminates runs where the defined metric (Accuracy) is not within the specified slack factor compared to the best performing run, thus save time and computation resources
 
 ## AutoML Pipeline
@@ -54,7 +55,22 @@ AutoMLConfig(
 
 In this configuration, I explicitely block Support Vector Machine because it is extremely slow (15x comparing to other models).
 
-After iterating through 15 models, the AutoML pipeline selected the VotingEnsemble model as the best performing. VotingEnsemble models can be considered as a meta-model or a model-of models, since it combines the predictions from multiple other models.
+After iterating through 15 models, the AutoML pipeline selected the VotingEnsemble model as the best performing. VotingEnsemble models can be considered as a meta-model or a model-of models, since it combines the predictions from multiple other models. The ensemble is composed of 5 models, 1 LightGBM, 3 XGBoost and 1 Logistic Regressor. Details are as follows:
+
+```python
+{
+    '_aml_system_azureml.automlComponent': 'AutoML',
+    '_aml_system_ComputeTargetStatus': '{"AllocationState":"steady","PreparingNodeCount":0,"RunningNodeCount":1,"CurrentNodeCount":4}',
+    'ensembled_iterations': '[0, 1, 6, 7, 8]',
+    'ensembled_algorithms': "['LightGBM', 'XGBoostClassifier', 'XGBoostClassifier', 'XGBoostClassifier', 'LogisticRegression']",
+    'ensemble_weights': '[0.46153846153846156, 0.07692307692307693, 0.15384615384615385, 0.23076923076923078, 0.07692307692307693]',
+    'best_individual_pipeline_score': '0.9154171641510163',
+    'best_individual_iteration': '0',
+    '_aml_system_automl_is_child_run_end_telemetry_event_logged': 'True'
+}
+
+For details on the hyperparameters of each child models, please refer to the notebook [here]('./../src/udacity-project.ipynb)
+ ```
 
 ## Pipeline comparison
 
@@ -68,3 +84,5 @@ Nevertheless, AutoML utilises a large range of complex models and sophisticated 
 
 - Replace `SKLearn` estimator with `ScriptRunConfig`. Although they have similar functionalities, `SKLearn` API is now deprecated and should be replaced with `ScriptRunConfig` which is more generic.
 - Re-evaluate the 2 pipelines using AUROC and AUPRC
+- Handle data imbalance issue by assigning class weight or over/undersampling
+- Experiment with label encoding for tree models
